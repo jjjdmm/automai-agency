@@ -1,486 +1,371 @@
-<!DOCTYPE html>
-<html lang="it">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AutomAI Agency - Sistema di Acquisizione Automatico</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        .spinner { animation: spin 1s linear infinite; }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-    </style>
-</head>
-<body class="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white min-h-screen">
-    <div id="app"></div>
+import React, { useState, useEffect } from 'react';
+import { Bot, Zap, MessageSquare, TrendingUp, DollarSign, Users, Mail, Calendar, CheckCircle, Play, Settings, BarChart3, Plus, X, Edit2, Trash2 } from 'lucide-react';
 
-    <script>
-        // State Management
-        const state = {
-            activeTab: 'dashboard',
-            prospects: [
-                { id: 1, name: "Ristorante Da Marco", industry: "Food & Beverage", score: 92, status: "hot", email: "info@damarco.it" },
-                { id: 2, name: "E-commerce Fashion Italia", industry: "E-commerce", score: 88, status: "warm", email: "contact@fashion.it" },
-                { id: 3, name: "Studio Medico Milano", industry: "Healthcare", score: 85, status: "warm", email: "info@studiomedico.it" },
-                { id: 4, name: "Centro Fitness Power", industry: "Fitness", score: 78, status: "cold", email: "info@fitnesspower.it" }
-            ],
-            clients: [
-                { id: 1, name: "Cliente Demo 1", mrr: 800, service: "Chatbot AI", status: "active" },
-                { id: 2, name: "Cliente Demo 2", mrr: 1200, service: "Email Automation", status: "active" }
-            ],
-            services: [
-                {
-                    id: 'chatbot',
-                    name: 'Chatbot AI 24/7',
-                    icon: '💬',
-                    setup: '€4,500',
-                    monthly: '€750/mese',
-                    roi: '60% riduzione costi',
-                    time: '3 giorni',
-                    color: 'from-blue-600 to-blue-800'
-                },
-                {
-                    id: 'email',
-                    name: 'Email Automation',
-                    icon: '✉️',
-                    setup: '€3,000',
-                    monthly: '€500/mese',
-                    roi: '40% più conversioni',
-                    time: '2 giorni',
-                    color: 'from-purple-600 to-purple-800'
-                },
-                {
-                    id: 'social',
-                    name: 'Social AI Manager',
-                    icon: '📱',
-                    setup: '€3,500',
-                    monthly: '€650/mese',
-                    roi: '5x più engagement',
-                    time: '2 giorni',
-                    color: 'from-pink-600 to-pink-800'
-                },
-                {
-                    id: 'analytics',
-                    name: 'Analytics Dashboard',
-                    icon: '📊',
-                    setup: '€6,000',
-                    monthly: '€900/mese',
-                    roi: 'Insights real-time',
-                    time: '4 giorni',
-                    color: 'from-green-600 to-green-800'
-                }
-            ],
-            leadGenActive: false,
-            selectedService: null,
-            scanProgress: 0
-        };
+export default function RealDashboard() {
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [prospects, setProspects] = useState([]);
+  const [clients, setClients] = useState([]);
+  const [showAddProspect, setShowAddProspect] = useState(false);
+  const [showAddClient, setShowAddClient] = useState(false);
 
-        // Actions
-        function setActiveTab(tab) {
-            state.activeTab = tab;
-            render();
-        }
+  // Load data from localStorage on mount
+  useEffect(() => {
+    const savedProspects = localStorage.getItem('automai_prospects');
+    const savedClients = localStorage.getItem('automai_clients');
+    
+    if (savedProspects) setProspects(JSON.parse(savedProspects));
+    if (savedClients) setClients(JSON.parse(savedClients));
+  }, []);
 
-        function startLeadGen() {
-            state.leadGenActive = true;
-            state.scanProgress = 0;
-            render();
+  // Save data to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('automai_prospects', JSON.stringify(prospects));
+  }, [prospects]);
 
-            const interval = setInterval(() => {
-                state.scanProgress += 10;
-                if (state.scanProgress >= 100) {
-                    clearInterval(interval);
-                    // Add new prospects
-                    const newProspects = [
-                        { id: Date.now(), name: "Farmacia Centrale", industry: "Healthcare", score: 81, status: "warm", email: "info@farmacia.it" },
-                        { id: Date.now() + 1, name: "Hotel Bella Vista", industry: "Hospitality", score: 79, status: "warm", email: "booking@hotel.it" },
-                        { id: Date.now() + 2, name: "Agenzia Immobiliare Elite", industry: "Real Estate", score: 86, status: "hot", email: "info@elite.it" }
-                    ];
-                    state.prospects = [...newProspects, ...state.prospects];
-                    setTimeout(() => {
-                        state.leadGenActive = false;
-                        state.scanProgress = 0;
-                        render();
-                    }, 1000);
-                }
-                render();
-            }, 300);
-        }
+  useEffect(() => {
+    localStorage.setItem('automai_clients', JSON.stringify(clients));
+  }, [clients]);
 
-        function sendEmail(prospect) {
-            alert(`✅ EMAIL INVIATA AUTOMATICAMENTE!\n\nA: ${prospect.name}\nEmail: ${prospect.email}\n\nOggetto: "Riduci i costi del 60% con AI"\n\nLa sequenza di follow-up partirà automaticamente nei prossimi giorni.\n\n✓ Email 1: Oggi\n✓ Email 2: Tra 4 giorni\n✓ Email 3: Tra 7 giorni`);
-        }
+  const addProspect = (prospectData) => {
+    const newProspect = {
+      id: Date.now(),
+      ...prospectData,
+      addedDate: new Date().toLocaleDateString()
+    };
+    setProspects([newProspect, ...prospects]);
+    setShowAddProspect(false);
+  };
 
-        function bookCall(prospect) {
-            alert(`📅 LINK BOOKING INVIATO!\n\nA: ${prospect.name}\n\nIl prospect ha ricevuto:\n✓ Link Calendly per prenotare\n✓ Opzioni di orari disponibili\n✓ Link Google Meet automatico\n\nRiceverai notifica quando prenota la call!`);
-        }
+  const deleteProspect = (id) => {
+    if (window.confirm('Eliminare questo prospect?')) {
+      setProspects(prospects.filter(p => p.id !== id));
+    }
+  };
 
-        function configureService(service) {
-            state.selectedService = service;
-            render();
-            setTimeout(() => {
-                document.getElementById('demo-section')?.scrollIntoView({ behavior: 'smooth' });
-            }, 100);
-        }
+  const addClient = (clientData) => {
+    const newClient = {
+      id: Date.now(),
+      ...clientData,
+      status: 'active',
+      startDate: new Date().toLocaleDateString()
+    };
+    setClients([newClient, ...clients]);
+    setShowAddClient(false);
+  };
 
-        function activateService() {
-            alert(`✅ SERVIZIO ATTIVATO!\n\n"${state.selectedService.name}"\n\n✓ Template configurato\n✓ AI addestrata\n✓ Sistema pronto per il cliente\n✓ Demo disponibile\n\nPuoi ora presentarlo ai prospect!`);
-        }
+  const deleteClient = (id) => {
+    if (window.confirm('Eliminare questo cliente?')) {
+      setClients(clients.filter(c => c.id !== id));
+    }
+  };
 
-        // Calculate totals
-        function getTotalMRR() {
-            return state.clients.reduce((sum, c) => sum + c.mrr, 0);
-        }
+  const totalMRR = clients.reduce((sum, client) => sum + parseInt(client.mrr || 0), 0);
+  const projectedARR = totalMRR * 12;
 
-        // Render Functions
-        function renderDashboard() {
-            const totalMRR = getTotalMRR();
-            const arr = totalMRR * 12;
+  const services = [
+    { id: 'chatbot', name: 'Chatbot AI 24/7', icon: MessageSquare, setup: '€4,500', monthly: '€750/mese', color: 'bg-blue-500' },
+    { id: 'email', name: 'Email Automation', icon: Mail, setup: '€3,000', monthly: '€500/mese', color: 'bg-purple-500' },
+    { id: 'social', name: 'Social AI Manager', icon: TrendingUp, setup: '€3,500', monthly: '€650/mese', color: 'bg-pink-500' },
+    { id: 'analytics', name: 'Analytics Dashboard', icon: BarChart3, setup: '€6,000', monthly: '€900/mese', color: 'bg-green-500' }
+  ];
 
-            return `
-                <div class="space-y-6">
-                    <!-- KPI Cards -->
-                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div class="bg-gradient-to-br from-blue-600/20 to-blue-800/20 rounded-xl p-6 border border-blue-500/30">
-                            <div class="text-3xl mb-2">👥</div>
-                            <p class="text-2xl font-bold">${state.prospects.length}</p>
-                            <p class="text-sm text-gray-400">Prospect Attivi</p>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
+      {/* Header */}
+      <div className="bg-black/30 backdrop-blur-sm border-b border-white/10">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-2 rounded-lg">
+                <Bot className="w-6 h-6" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold">AutomAI Agency</h1>
+                <p className="text-xs text-purple-300">La Tua Dashboard Operativa</p>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <div className="text-right">
+                <p className="text-xs text-gray-400">MRR Totale</p>
+                <p className="text-lg font-bold text-green-400">€{totalMRR}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-gray-400">ARR Proiettato</p>
+                <p className="text-lg font-bold text-purple-400">€{projectedARR.toLocaleString()}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Navigation */}
+      <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="flex gap-2 bg-black/20 rounded-lg p-1">
+          {['dashboard', 'prospects', 'clienti', 'servizi'].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${
+                activeTab === tab ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white' : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              {tab === 'dashboard' && '🏠 Dashboard'}
+              {tab === 'prospects' && '🎯 Prospect'}
+              {tab === 'clienti' && '👥 Clienti'}
+              {tab === 'servizi' && '⚙️ Servizi'}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="max-w-7xl mx-auto px-6 py-6">
+        {activeTab === 'dashboard' && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-gradient-to-br from-blue-600/20 to-blue-800/20 rounded-xl p-6 border border-blue-500/30">
+                <Users className="w-8 h-8 text-blue-400 mb-2" />
+                <p className="text-2xl font-bold">{prospects.length}</p>
+                <p className="text-sm text-gray-400">Prospect</p>
+              </div>
+              <div className="bg-gradient-to-br from-green-600/20 to-green-800/20 rounded-xl p-6 border border-green-500/30">
+                <CheckCircle className="w-8 h-8 text-green-400 mb-2" />
+                <p className="text-2xl font-bold">{clients.length}</p>
+                <p className="text-sm text-gray-400">Clienti</p>
+              </div>
+              <div className="bg-gradient-to-br from-purple-600/20 to-purple-800/20 rounded-xl p-6 border border-purple-500/30">
+                <DollarSign className="w-8 h-8 text-purple-400 mb-2" />
+                <p className="text-2xl font-bold">€{totalMRR}</p>
+                <p className="text-sm text-gray-400">MRR</p>
+              </div>
+              <div className="bg-gradient-to-br from-pink-600/20 to-pink-800/20 rounded-xl p-6 border border-pink-500/30">
+                <TrendingUp className="w-8 h-8 text-pink-400 mb-2" />
+                <p className="text-2xl font-bold">€{projectedARR.toLocaleString()}</p>
+                <p className="text-sm text-gray-400">ARR</p>
+              </div>
+            </div>
+
+            <div className="bg-black/30 rounded-xl p-6 border border-white/10">
+              <h2 className="text-xl font-bold mb-4 flex items-center gap-2"><Zap className="text-yellow-400" />Azioni Rapide</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <button onClick={() => setShowAddProspect(true)} className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 p-4 rounded-lg text-left transition-all transform hover:scale-105">
+                  <Plus className="w-6 h-6 mb-2" />
+                  <p className="font-bold">Aggiungi Prospect</p>
+                  <p className="text-sm text-purple-200">Nuovo lead</p>
+                </button>
+                <button onClick={() => setShowAddClient(true)} className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 p-4 rounded-lg text-left transition-all transform hover:scale-105">
+                  <Plus className="w-6 h-6 mb-2" />
+                  <p className="font-bold">Aggiungi Cliente</p>
+                  <p className="text-sm text-green-200">Nuovo contratto</p>
+                </button>
+                <button onClick={() => setActiveTab('servizi')} className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 p-4 rounded-lg text-left transition-all transform hover:scale-105">
+                  <Settings className="w-6 h-6 mb-2" />
+                  <p className="font-bold">Vedi Servizi</p>
+                  <p className="text-sm text-blue-200">Catalogo</p>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'prospects' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold">🎯 Prospect</h2>
+              <button onClick={() => setShowAddProspect(true)} className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg font-bold flex items-center gap-2">
+                <Plus className="w-5 h-5" />Nuovo
+              </button>
+            </div>
+
+            {prospects.length === 0 ? (
+              <div className="bg-black/30 rounded-xl p-12 border border-white/10 text-center">
+                <Users className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                <p className="text-xl text-gray-400 mb-4">Nessun prospect</p>
+                <button onClick={() => setShowAddProspect(true)} className="px-6 py-3 bg-purple-600 rounded-lg font-bold">Aggiungi Primo Prospect</button>
+              </div>
+            ) : (
+              <div className="grid gap-4">
+                {prospects.map(prospect => (
+                  <div key={prospect.id} className="bg-white/5 rounded-lg p-4 border border-white/10">
+                    <div className="flex justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="font-bold text-lg">{prospect.name}</h3>
+                          <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                            prospect.status === 'hot' ? 'bg-red-500/20 text-red-300' :
+                            prospect.status === 'warm' ? 'bg-orange-500/20 text-orange-300' : 'bg-blue-500/20 text-blue-300'
+                          }`}>{prospect.status.toUpperCase()}</span>
                         </div>
-                        <div class="bg-gradient-to-br from-green-600/20 to-green-800/20 rounded-xl p-6 border border-green-500/30">
-                            <div class="text-3xl mb-2">✓</div>
-                            <p class="text-2xl font-bold">${state.clients.length}</p>
-                            <p class="text-sm text-gray-400">Clienti Attivi</p>
-                        </div>
-                        <div class="bg-gradient-to-br from-purple-600/20 to-purple-800/20 rounded-xl p-6 border border-purple-500/30">
-                            <div class="text-3xl mb-2">💰</div>
-                            <p class="text-2xl font-bold">€${totalMRR}</p>
-                            <p class="text-sm text-gray-400">MRR Mensile</p>
-                        </div>
-                        <div class="bg-gradient-to-br from-pink-600/20 to-pink-800/20 rounded-xl p-6 border border-pink-500/30">
-                            <div class="text-3xl mb-2">📈</div>
-                            <p class="text-2xl font-bold">85%</p>
-                            <p class="text-sm text-gray-400">Conversione</p>
-                        </div>
+                        <p className="text-sm text-gray-400">📊 {prospect.industry} • 📧 {prospect.email}</p>
+                        {prospect.notes && <p className="text-sm text-gray-300 mt-2">📝 {prospect.notes}</p>}
+                      </div>
+                      <button onClick={() => deleteProspect(prospect.id)} className="ml-4 p-2 text-red-400 hover:bg-red-500/20 rounded-lg">
+                        <Trash2 className="w-5 h-5" />
+                      </button>
                     </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
-                    <!-- Quick Actions -->
-                    <div class="bg-black/30 rounded-xl p-6 border border-white/10">
-                        <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
-                            ⚡ Azioni Rapide
-                        </h2>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <button onclick="startLeadGen()" class="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 p-4 rounded-lg text-left transition-all transform hover:scale-105">
-                                <div class="text-2xl mb-2">▶️</div>
-                                <p class="font-bold">Avvia Lead Gen</p>
-                                <p class="text-sm text-purple-200">Trova nuovi prospect</p>
-                            </button>
-                            <button onclick="setActiveTab('servizi')" class="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 p-4 rounded-lg text-left transition-all transform hover:scale-105">
-                                <div class="text-2xl mb-2">⚙️</div>
-                                <p class="font-bold">Configura Servizio</p>
-                                <p class="text-sm text-blue-200">Crea automazione</p>
-                            </button>
-                            <button onclick="setActiveTab('clienti')" class="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 p-4 rounded-lg text-left transition-all transform hover:scale-105">
-                                <div class="text-2xl mb-2">📊</div>
-                                <p class="font-bold">Vedi Performance</p>
-                                <p class="text-sm text-green-200">Dashboard clienti</p>
-                            </button>
+        {activeTab === 'clienti' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold">👥 Clienti</h2>
+              <button onClick={() => setShowAddClient(true)} className="px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg font-bold flex items-center gap-2">
+                <Plus className="w-5 h-5" />Nuovo
+              </button>
+            </div>
+
+            {clients.length === 0 ? (
+              <div className="bg-black/30 rounded-xl p-12 border border-white/10 text-center">
+                <CheckCircle className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                <p className="text-xl text-gray-400 mb-4">Nessun cliente</p>
+                <button onClick={() => setShowAddClient(true)} className="px-6 py-3 bg-green-600 rounded-lg font-bold">Aggiungi Primo Cliente</button>
+              </div>
+            ) : (
+              <>
+                <div className="grid gap-4">
+                  {clients.map(client => (
+                    <div key={client.id} className="bg-white/5 rounded-lg p-4 border border-white/10">
+                      <div className="flex justify-between mb-3">
+                        <div>
+                          <h3 className="font-bold text-lg">{client.name}</h3>
+                          <p className="text-sm text-gray-400">{client.service}</p>
                         </div>
+                        <div className="flex items-center gap-4">
+                          <div className="text-right">
+                            <p className="text-2xl font-bold text-green-400">€{client.mrr}</p>
+                            <p className="text-xs text-gray-400">MRR</p>
+                          </div>
+                          <button onClick={() => deleteClient(client.id)} className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg">
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        </div>
+                      </div>
                     </div>
-
-                    <!-- Revenue Projection -->
-                    <div class="bg-gradient-to-r from-green-600/20 to-emerald-600/20 rounded-xl p-6 border border-green-500/30">
-                        <h3 class="text-xl font-bold mb-4">💰 Proiezioni Revenue</h3>
-                        <div class="grid grid-cols-2 gap-6">
-                            <div>
-                                <p class="text-gray-400 mb-1">MRR Mensile</p>
-                                <p class="text-3xl font-bold text-green-400">€${totalMRR.toLocaleString()}</p>
-                            </div>
-                            <div>
-                                <p class="text-gray-400 mb-1">ARR Annuale</p>
-                                <p class="text-3xl font-bold text-purple-400">€${arr.toLocaleString()}</p>
-                            </div>
-                        </div>
-                        <div class="mt-4 pt-4 border-t border-green-500/30">
-                            <p class="text-sm text-green-200">
-                                💡 Con 10 clienti: <span class="font-bold">€100.000+/anno</span> di revenue ricorrente
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        function renderLeadGen() {
-            return `
-                <div class="space-y-6">
-                    <div class="bg-black/30 rounded-xl p-6 border border-white/10">
-                        <div class="flex items-center justify-between mb-6">
-                            <div>
-                                <h2 class="text-2xl font-bold mb-2">🎯 Sistema Lead Generation AI</h2>
-                                <p class="text-gray-400">Trova e qualifica prospect automaticamente</p>
-                            </div>
-                            <button 
-                                onclick="startLeadGen()" 
-                                ${state.leadGenActive ? 'disabled' : ''}
-                                class="px-6 py-3 rounded-lg font-bold flex items-center gap-2 ${state.leadGenActive ? 'bg-gray-600 cursor-not-allowed' : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700'}"
-                            >
-                                🔍 ${state.leadGenActive ? 'Scansione...' : 'Avvia Scansione'}
-                            </button>
-                        </div>
-
-                        ${state.leadGenActive ? `
-                            <div class="bg-purple-600/20 border border-purple-500/50 rounded-lg p-4 mb-6">
-                                <div class="space-y-3">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-5 h-5 border-2 border-purple-400 border-t-transparent rounded-full spinner"></div>
-                                        <p class="text-purple-300">Scansionando database LinkedIn e Google...</p>
-                                    </div>
-                                    <div class="w-full bg-purple-900/50 rounded-full h-2">
-                                        <div class="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-300" style="width: ${state.scanProgress}%"></div>
-                                    </div>
-                                    <p class="text-sm text-purple-200">Progresso: ${state.scanProgress}%</p>
-                                </div>
-                            </div>
-                        ` : ''}
-
-                        <div class="space-y-4">
-                            ${state.prospects.map(prospect => `
-                                <div class="bg-white/5 rounded-lg p-4 border border-white/10 hover:border-purple-500/50 transition-all">
-                                    <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
-                                        <div class="flex-1">
-                                            <div class="flex items-center gap-3 mb-2">
-                                                <h3 class="font-bold text-lg">${prospect.name}</h3>
-                                                <span class="px-3 py-1 rounded-full text-xs font-bold border ${
-                                                    prospect.status === 'hot' ? 'bg-red-500/20 text-red-300 border-red-500/50' :
-                                                    prospect.status === 'warm' ? 'bg-orange-500/20 text-orange-300 border-orange-500/50' :
-                                                    'bg-blue-500/20 text-blue-300 border-blue-500/50'
-                                                }">
-                                                    ${prospect.status === 'hot' ? '🔥 HOT' : prospect.status === 'warm' ? '⭐ WARM' : '❄️ COLD'}
-                                                </span>
-                                            </div>
-                                            <div class="flex flex-wrap gap-3 text-sm text-gray-400">
-                                                <span>📊 ${prospect.industry}</span>
-                                                <span>🎯 Score: ${prospect.score}/100</span>
-                                                <span>📧 ${prospect.email}</span>
-                                            </div>
-                                        </div>
-                                        <div class="flex gap-2">
-                                            <button onclick="sendEmail(${JSON.stringify(prospect).replace(/"/g, '&quot;')})" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-sm font-medium">
-                                                ✉️ Invia Email
-                                            </button>
-                                            <button onclick="bookCall(${JSON.stringify(prospect).replace(/"/g, '&quot;')})" class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-sm font-medium">
-                                                📞 Prenota Call
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        function renderServizi() {
-            return `
-                <div class="space-y-6">
-                    <div class="bg-black/30 rounded-xl p-6 border border-white/10">
-                        <h2 class="text-2xl font-bold mb-2">⚙️ Servizi AI Automatizzati</h2>
-                        <p class="text-gray-400 mb-6">Scegli e configura i servizi da offrire</p>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            ${state.services.map(service => `
-                                <div class="bg-white/5 rounded-xl p-6 border border-white/10 hover:border-purple-500/50 transition-all">
-                                    <div class="text-4xl mb-4">${service.icon}</div>
-                                    <h3 class="text-xl font-bold mb-4">${service.name}</h3>
-                                    <div class="space-y-2 mb-4">
-                                        <div class="flex justify-between text-sm">
-                                            <span class="text-gray-400">Setup:</span>
-                                            <span class="font-bold text-green-400">${service.setup}</span>
-                                        </div>
-                                        <div class="flex justify-between text-sm">
-                                            <span class="text-gray-400">Mensile:</span>
-                                            <span class="font-bold text-purple-400">${service.monthly}</span>
-                                        </div>
-                                        <div class="flex justify-between text-sm">
-                                            <span class="text-gray-400">ROI:</span>
-                                            <span class="font-bold text-blue-400">${service.roi}</span>
-                                        </div>
-                                        <div class="flex justify-between text-sm">
-                                            <span class="text-gray-400">Tempo:</span>
-                                            <span class="font-bold">${service.time}</span>
-                                        </div>
-                                    </div>
-                                    <button onclick="configureService(${JSON.stringify(service).replace(/"/g, '&quot;')})" class="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg font-bold">
-                                        Configura Servizio →
-                                    </button>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-
-                    ${state.selectedService ? `
-                        <div id="demo-section" class="bg-black/30 rounded-xl p-6 border border-white/10">
-                            <h3 class="text-xl font-bold mb-4">Demo: ${state.selectedService.name}</h3>
-                            <div class="bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-lg p-6 border border-purple-500/30">
-                                <div class="space-y-4">
-                                    <p class="text-center text-lg">✅ Sistema Pronto per l'Implementazione</p>
-                                    <div class="bg-black/40 rounded-lg p-4 space-y-2">
-                                        <p class="text-green-400">✓ Template configurato</p>
-                                        <p class="text-green-400">✓ AI addestrata per il settore</p>
-                                        <p class="text-green-400">✓ Integrazione pronta</p>
-                                        <p class="text-green-400">✓ Demo funzionante disponibile</p>
-                                    </div>
-                                    <div class="flex justify-center gap-4">
-                                        <button onclick="activateService()" class="px-6 py-3 bg-green-600 hover:bg-green-700 rounded-lg font-bold">
-                                            ✓ Attiva per Cliente
-                                        </button>
-                                        <button onclick="alert('🎬 Demo Live del servizio attivo!\\n\\nI tuoi clienti vedranno esattamente questo sistema in azione.')" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-bold">
-                                            👁️ Vedi Demo
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    ` : ''}
-                </div>
-            `;
-        }
-
-        function renderClienti() {
-            const totalMRR = getTotalMRR();
-            const arr = totalMRR * 12;
-
-            return `
-                <div class="space-y-6">
-                    <div class="bg-black/30 rounded-xl p-6 border border-white/10">
-                        <h2 class="text-2xl font-bold mb-2">👥 Clienti Attivi</h2>
-                        <p class="text-gray-400 mb-6">Monitora performance e revenue</p>
-
-                        <div class="space-y-4">
-                            ${state.clients.map(client => `
-                                <div class="bg-white/5 rounded-lg p-4 border border-white/10">
-                                    <div class="flex items-center justify-between mb-3">
-                                        <div>
-                                            <h3 class="font-bold text-lg">${client.name}</h3>
-                                            <p class="text-sm text-gray-400">${client.service}</p>
-                                        </div>
-                                        <div class="text-right">
-                                            <p class="text-2xl font-bold text-green-400">€${client.mrr}</p>
-                                            <p class="text-xs text-gray-400">MRR mensile</p>
-                                        </div>
-                                    </div>
-                                    <div class="flex gap-2">
-                                        <span class="px-3 py-1 bg-green-500/20 text-green-300 rounded-full text-xs border border-green-500/50">
-                                            ✓ Attivo
-                                        </span>
-                                        <span class="px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full text-xs border border-blue-500/50">
-                                            💳 Fatturazione auto
-                                        </span>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-
-                        <div class="mt-6 p-6 bg-gradient-to-r from-green-600/20 to-emerald-600/20 rounded-lg border border-green-500/30">
-                            <div class="grid grid-cols-2 gap-6">
-                                <div>
-                                    <p class="text-sm text-gray-400 mb-1">Revenue Mensile (MRR)</p>
-                                    <p class="text-3xl font-bold text-green-400">€${totalMRR.toLocaleString()}</p>
-                                </div>
-                                <div>
-                                    <p class="text-sm text-gray-400 mb-1">Proiezione Annuale (ARR)</p>
-                                    <p class="text-3xl font-bold text-purple-400">€${arr.toLocaleString()}</p>
-                                </div>
-                            </div>
-                            <div class="mt-4 pt-4 border-t border-green-500/30">
-                                <p class="text-sm text-green-200">
-                                    💡 Con 10 clienti: <span class="font-bold">€100.000+/anno</span>
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        function render() {
-            const totalMRR = getTotalMRR();
-            const arr = totalMRR * 12;
-
-            const html = `
-                <!-- Header -->
-                <div class="bg-black/30 backdrop-blur-sm border-b border-white/10">
-                    <div class="max-w-7xl mx-auto px-6 py-4">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <div class="bg-gradient-to-r from-purple-500 to-pink-500 p-2 rounded-lg">
-                                    <span class="text-2xl">🤖</span>
-                                </div>
-                                <div>
-                                    <h1 class="text-xl font-bold">AutomAI Agency</h1>
-                                    <p class="text-xs text-purple-300">Sistema Autonomo di Acquisizione</p>
-                                </div>
-                            </div>
-                            <div class="flex gap-4">
-                                <div class="text-right">
-                                    <p class="text-xs text-gray-400">MRR Totale</p>
-                                    <p class="text-lg font-bold text-green-400">€${totalMRR}</p>
-                                </div>
-                                <div class="text-right">
-                                    <p class="text-xs text-gray-400">ARR Proiettato</p>
-                                    <p class="text-lg font-bold text-purple-400">€${arr.toLocaleString()}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                  ))}
                 </div>
 
-                <!-- Navigation -->
-                <div class="max-w-7xl mx-auto px-6 py-4">
-                    <div class="flex gap-2 bg-black/20 rounded-lg p-1">
-                        ${['dashboard', 'lead-gen', 'servizi', 'clienti'].map(tab => `
-                            <button 
-                                onclick="setActiveTab('${tab}')" 
-                                class="flex-1 py-2 px-4 rounded-lg font-medium transition-all ${state.activeTab === tab ? 'bg-gradient-to-r from-purple-600 to-pink-600' : 'text-gray-400 hover:text-white'}"
-                            >
-                                ${tab === 'dashboard' ? '🏠 Dashboard' : ''}
-                                ${tab === 'lead-gen' ? '🎯 Lead Gen' : ''}
-                                ${tab === 'servizi' ? '⚙️ Servizi' : ''}
-                                ${tab === 'clienti' ? '👥 Clienti' : ''}
-                            </button>
-                        `).join('')}
+                <div className="bg-gradient-to-r from-green-600/20 to-emerald-600/20 rounded-xl p-6 border border-green-500/30">
+                  <h3 className="text-xl font-bold mb-4">💰 Revenue</h3>
+                  <div className="grid grid-cols-2 gap-6">
+                    <div>
+                      <p className="text-sm text-gray-400">MRR Mensile</p>
+                      <p className="text-3xl font-bold text-green-400">€{totalMRR}</p>
                     </div>
-                </div>
-
-                <!-- Content -->
-                <div class="max-w-7xl mx-auto px-6 py-6">
-                    ${state.activeTab === 'dashboard' ? renderDashboard() : ''}
-                    ${state.activeTab === 'lead-gen' ? renderLeadGen() : ''}
-                    ${state.activeTab === 'servizi' ? renderServizi() : ''}
-                    ${state.activeTab === 'clienti' ? renderClienti() : ''}
-                </div>
-
-                <!-- Footer -->
-                <div class="max-w-7xl mx-auto px-6 py-8">
-                    <div class="bg-gradient-to-r from-purple-600/10 to-pink-600/10 rounded-xl p-6 border border-purple-500/20">
-                        <h3 class="font-bold mb-2">⚡ Sistema 100% Automatizzato</h3>
-                        <p class="text-sm text-gray-300">
-                            ✓ Lead generation AI • ✓ Email automatiche • ✓ Chatbot 24/7 • ✓ Fatturazione auto • ✓ Analytics real-time
-                        </p>
+                    <div>
+                      <p className="text-sm text-gray-400">ARR Annuale</p>
+                      <p className="text-3xl font-bold text-purple-400">€{projectedARR.toLocaleString()}</p>
                     </div>
+                  </div>
                 </div>
-            `;
+              </>
+            )}
+          </div>
+        )}
 
-            document.getElementById('app').innerHTML = html;
-        }
+        {activeTab === 'servizi' && (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold">⚙️ Servizi</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {services.map(service => {
+                const Icon = service.icon;
+                return (
+                  <div key={service.id} className="bg-white/5 rounded-xl p-6 border border-white/10">
+                    <div className={`${service.color} w-12 h-12 rounded-lg flex items-center justify-center mb-4`}>
+                      <Icon className="w-6 h-6" />
+                    </div>
+                    <h3 className="text-xl font-bold mb-4">{service.name}</h3>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-400">Setup:</span>
+                        <span className="font-bold text-green-400">{service.setup}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-400">Mensile:</span>
+                        <span className="font-bold text-purple-400">{service.monthly}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
 
-        // Initial render
-        render();
-    </script>
-</body>
-</html>
+      {/* Add Prospect Modal */}
+      {showAddProspect && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+          <div className="bg-gradient-to-br from-slate-900 to-purple-900 rounded-2xl p-8 max-w-md w-full border border-purple-500/50">
+            <div className="flex justify-between mb-6">
+              <h3 className="text-2xl font-bold">Aggiungi Prospect</h3>
+              <button onClick={() => setShowAddProspect(false)} className="text-3xl">&times;</button>
+            </div>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const fd = new FormData(e.target);
+              addProspect({
+                name: fd.get('name'),
+                industry: fd.get('industry'),
+                email: fd.get('email'),
+                phone: fd.get('phone'),
+                status: fd.get('status'),
+                notes: fd.get('notes')
+              });
+            }} className="space-y-4">
+              <input name="name" placeholder="Nome *" required className="w-full px-4 py-3 bg-black/40 border border-white/20 rounded-lg focus:outline-none focus:border-purple-500 text-white" />
+              <input name="industry" placeholder="Settore *" required className="w-full px-4 py-3 bg-black/40 border border-white/20 rounded-lg focus:outline-none focus:border-purple-500 text-white" />
+              <input name="email" type="email" placeholder="Email *" required className="w-full px-4 py-3 bg-black/40 border border-white/20 rounded-lg focus:outline-none focus:border-purple-500 text-white" />
+              <input name="phone" placeholder="Telefono" className="w-full px-4 py-3 bg-black/40 border border-white/20 rounded-lg focus:outline-none focus:border-purple-500 text-white" />
+              <select name="status" className="w-full px-4 py-3 bg-black/40 border border-white/20 rounded-lg focus:outline-none focus:border-purple-500 text-white">
+                <option value="cold">Cold</option>
+                <option value="warm">Warm</option>
+                <option value="hot">Hot</option>
+              </select>
+              <textarea name="notes" placeholder="Note" rows="3" className="w-full px-4 py-3 bg-black/40 border border-white/20 rounded-lg focus:outline-none focus:border-purple-500 text-white" />
+              <button type="submit" className="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg font-bold">Aggiungi</button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Add Client Modal */}
+      {showAddClient && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+          <div className="bg-gradient-to-br from-slate-900 to-purple-900 rounded-2xl p-8 max-w-md w-full border border-green-500/50">
+            <div className="flex justify-between mb-6">
+              <h3 className="text-2xl font-bold">Aggiungi Cliente</h3>
+              <button onClick={() => setShowAddClient(false)} className="text-3xl">&times;</button>
+            </div>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const fd = new FormData(e.target);
+              addClient({
+                name: fd.get('name'),
+                service: fd.get('service'),
+                mrr: fd.get('mrr')
+              });
+            }} className="space-y-4">
+              <input name="name" placeholder="Nome Cliente *" required className="w-full px-4 py-3 bg-black/40 border border-white/20 rounded-lg focus:outline-none focus:border-green-500 text-white" />
+              <select name="service" required className="w-full px-4 py-3 bg-black/40 border border-white/20 rounded-lg focus:outline-none focus:border-green-500 text-white">
+                <option value="">Servizio *</option>
+                <option value="Chatbot AI">Chatbot AI</option>
+                <option value="Email Automation">Email Automation</option>
+                <option value="Social AI">Social AI</option>
+                <option value="Analytics">Analytics</option>
+                <option value="Professional">Professional</option>
+                <option value="Enterprise">Enterprise</option>
+              </select>
+              <input name="mrr" type="number" placeholder="MRR Mensile (€) *" required className="w-full px-4 py-3 bg-black/40 border border-white/20 rounded-lg focus:outline-none focus:border-green-500 text-white" />
+              <button type="submit" className="w-full py-3 bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg font-bold">Aggiungi</button>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
